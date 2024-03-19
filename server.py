@@ -1,10 +1,10 @@
-import socket, threading
+import socket, multiprocessing
 
 
 
 # Definindo a porta que vai ser utilizada para a comunicação
-HOST_PORT = 12345 
-
+PORT = 12345 
+HOST = "localhost"
 
 
 def server():
@@ -12,7 +12,7 @@ def server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     # Linkando o socket ao HOST e a porta que será utilizada
-    server_socket.bind(('localhost', HOST_PORT)) 
+    server_socket.bind((HOST, PORT)) 
     
     # Listen for incoming connections
     server_socket.listen(5)
@@ -48,16 +48,16 @@ def server():
 
             
             
-def client():
+def client(message):
     # Criando um Socket TCP/IP
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     # Conectando o socket ao servidor
-    client_socket.connect(('localhost', HOST_PORT))
+    client_socket.connect((HOST, PORT))
     
     try:
         # Mandando a mensagem para o servidor
-        message = "PING"
+        
         print(f"CLIENT - sending: {message}")
         client_socket.sendall(message.encode())
         
@@ -75,14 +75,19 @@ def client():
         
         
 if __name__ == "__main__":
-    
-    # Criando 2 threads, uma para o cliente e a outra para o servidor
-    thread_server = threading.Thread(target=server)
-    thread_client = threading.Thread(target=client)
 
-    thread_server.start()
-    thread_client.start()
+    message = input()
+
+    # Criando 2 threads, uma para o cliente e a outra para o servidor
+    process_server = multiprocessing.Process(target=server)
+    process_client = multiprocessing.Process(target=client)
+
+    process_server = multiprocessing.Process(target=server)
+    process_client = multiprocessing.Process(target=client, args=(message,))
+
+    process_server.start()
+    process_client.start()
     
-    thread_server.join()
-    thread_client.join()
+    process_server.join()
+    process_client.join()
     
