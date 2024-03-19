@@ -20,7 +20,7 @@ Desenvolver uma aplicação cliente-servidor capaz de, na camada de aplicação,
 
 Utilizamos a versão 3.12.0 do Python para o desenvolvimento
 
-[ ] TODO - Instruções para execução do projeto
+- [ ] TODO - Instruções para execução do projeto
 
 ## 📚📖🔍 Referências
 
