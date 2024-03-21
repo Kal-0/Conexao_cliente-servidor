@@ -35,9 +35,6 @@ class ClientServer:
                     # Recebendo a mensagem do cliente 
                     data = client_socket.recv(1024)
 
-                    if not data:
-                        break
-
                     print(f"HOST - received: {data.decode()}")
 
                     # Mandando mensagem de confirmação do recebimento da mensagem do cliente
