@@ -12,15 +12,31 @@ def client():
         message = "Hello, server!"
         print(f"Sending: {message}")
         client_socket.sendall(message.encode())
-        
+
         # Receive response from the server
         data = client_socket.recv(1024)
         print(f"Received: {data.decode()}")
-        client_socket.close()
+        
+
+        print("send a message!")
+
+        while(True):
+            input_message = input("message: ")
+            if(input_message == "exit"):
+                break
+            
+            client_socket.sendall(input_message.encode())
+
+            # Receive response from the server
+            data = client_socket.recv(1024)
+            print(f"Received: {data.decode()}")
         
     finally:
         # Close the connection
         print("finally")
+        client_socket.close()
+
+
 
 if __name__ == "__main__":
     client()
