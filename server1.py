@@ -3,8 +3,12 @@ import socket
 # Create the socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Bind to localhost
-sock.bind(('localhost', 5000))
+# Set origin
+LOCALHOST = "127.0.0.1"
+ip = "127.0.0.1"
+port = 5000
+
+sock.bind((ip, port))
 
 # Listen for connections
 sock.listen(1)
@@ -14,30 +18,39 @@ while True:
 
     # Accept connection
     conn, addr = sock.accept()
-    print("Established connection.\n")
 
     # Send ACK
     conn.send("ACK".encode())
 
     #Recieve ACK
-    message = conn.recv(1024).decode()
+    ack = conn.recv(1024).decode()
 
     # Confirm ACK
-    if message == "ACK":
+    if ack == "ACK":
+
+        print(f"Connection established with: {addr}.\n")
 
         while True:
-            # Receive message
-            message = conn.recv(1024).decode()
 
-            if message == "\\terminate":
-                print("Connection terminated.")
+            try:
+                # Receive message
+                message = conn.recv(1024).decode()
+            except:
+                print("something went wrong...\n")
                 break
 
-            print("Message received.")
-            print(f"Message: {message}")
+            if message:
+                # Terminate connection
+                if message == "\\terminate":
+                    print("Connection terminated.\n")
+                    break
+                
+                # print("Message received.")
+                print(f"Message: {message}")
 
-            # Send ACK
-            conn.send("ACK".encode())
+                # Send ACK
+                conn.send("ACK".encode())
+            #print("///")
 
     # Close the connection
     conn.close()
