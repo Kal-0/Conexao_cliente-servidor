@@ -1,4 +1,7 @@
 import socket
+import random
+
+
 
 # Create the socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -6,7 +9,9 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Set origin
 LOCALHOST = "127.0.0.1"
 ip = "127.0.0.2"
-port = 12345
+# Set a random port
+port = random.randint(5000, 6000)
+#port = 12345
 
 sock.bind((ip, port))
 
@@ -34,6 +39,7 @@ while True:
     if message:
         if message == "\\terminate":
             sock.send(message.encode())
+
             break
 
         sock.send(message.encode())
@@ -44,6 +50,8 @@ while True:
         # Confirm ACK
         if ack == "ACK":
             print("Message received by server.")
+
+
 
 # Close the socket
 sock.close()
