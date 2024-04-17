@@ -5,13 +5,38 @@ import pickle
 
 
 # Função para criar e enviar um pacote com o número de sequência
-def send_packet(sock, message, sequence_number):
-    # Criar cabeçalho com o número de sequência
-    header_obj = header.COOLHeader(sequence_number, sequence_number+1, "SYN", 0)
-    # Adicionar checksum ao cabeçalho
-    checksum = header_obj.set_checksum(message.encode())
-    # Enviar cabeçalho e mensagem
-    sock.send(pickle.dumps((header_obj, message.encode())))
+def send_packet(sequence , ack_number):
+
+    while True:
+        # Send message
+        message = input("Send message: ")
+        
+        if message:
+            if message == "\\terminate":
+                sock.send(message.encode())
+
+                break
+
+            # Envinhando caracteres separadamente
+            caracteres = list(message)
+
+            for char in caracteres:
+                hd = header.COOLHeader(sequence, ack_number ,1)
+                package = f'{hd.sequence_number},{hd.ack_number},{char}'
+                
+                sock.send(package.encode())
+
+                sequence += 1
+                ack_number += 1
+
+                # Receive ACK
+                ack = sock.recv(1024).decode()
+
+                # Confirm ACK
+                if ack == "ACK":
+                    print("Message received by server.")
+                else:
+                    print("Package lost.")
 
 # Create the socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -43,46 +68,18 @@ if ack == "ACK":
 sock.send("ACK".encode())
 
 
-sending_op = input("Modo de envio de pacotes:\n[1]-Individualmente\n[2]-Em lote\n")
+user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n[3]Simular perda de pacotes\
+                    \n[4]Simular erro de integridade(Checksum)\n")
 
-if sending_op == 1:
+if user_option == '1':
     sequence = 0
-    count = 1
+    ack_number = 1
 
-    while True:
-        # Send message
-        message = input("Send message: ")
-        
-        if message:
-            if message == "\\terminate":
-                sock.send(message.encode())
+    send_packet(sequence , ack_number)
 
-                break
-
-            # Envinhando caracteres separadamente
-            caracteres = list(message)
-
-            for char in caracteres:
-                hd = header.COOLHeader(sequence, count ,1)
-                package = f'{hd.sequence_number},{hd.ack_number},{char}'
-                
-                sock.send(package.encode())
-
-                sequence += 1
-                count += 1
-
-                # Receive ACK
-                ack = sock.recv(1024).decode()
-
-                # Confirm ACK
-                if ack == "ACK":
-                    print("Message received by server.")
-                else:
-                    print("Package lost.")
-
-elif sending_op == 2:
+elif user_option == '2':
     sequence = 0
-    count = 1
+    ack_number = 1
 
     while True:
         # Send message
@@ -96,13 +93,13 @@ elif sending_op == 2:
 
             # Envinhando caracteres separadamente
           
-            hd = header.COOLHeader(sequence, count ,1)
+            hd = header.COOLHeader(sequence, ack_number ,1)
             package = f'{hd.sequence_number},{hd.ack_number},{message}'
             
             sock.send(package.encode())
 
             sequence += 1
-            count += 1
+            ack_number += 1
 
             # Receive ACK
             ack = sock.recv(1024).decode()
@@ -112,8 +109,15 @@ elif sending_op == 2:
                 print("Message received by server.")
             else:
                 print("Package lost.")
+
+elif user_option == '3':
+    sequence = 1
+    ack_number = 1
+
+    send_packet(sequence , ack_number)
+                
 else:
-    print
+    print("Opcao invalida")
 
 
 # Close the socket

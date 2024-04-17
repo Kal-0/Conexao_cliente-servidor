@@ -1,6 +1,6 @@
 import pickle
 import header
-h1 = header.COOLHeader(2, 1, "ack", 10)
+h1 = header.COOLHeader(2, 1, 10)
 
 test1 = b"c"
 exp1 = 198
