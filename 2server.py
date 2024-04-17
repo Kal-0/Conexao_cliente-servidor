@@ -13,7 +13,7 @@ s.bind((HOST, PORT))
 s.listen()
 
 while True:
-    print('Aguardando conexão de um cliente')
+    print('Aguardando conexão de um cliente...')
     
     # Aceita uma conexão quando ela chega, retorna uma nova tupla com o objeto de conexão e o endereço do cliente
     conn, ender = s.accept()
