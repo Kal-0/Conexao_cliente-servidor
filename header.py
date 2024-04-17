@@ -1,10 +1,10 @@
 import pickle
 
 class COOLHeader:
-    def __init__(self, sequence_number:int, ack_number:int, flags:str, window_size:int):
+    def __init__(self, sequence_number:int, ack_number:int, window_size:int):
         self.sequence_number = sequence_number
         self.ack_number = ack_number
-        self.flags = flags
+        self.flags = None
         self.window_size = window_size
         self.header_length = None
         self.checksum = None
@@ -36,12 +36,13 @@ def vef_checksum(header, payload, checksum):
         return True
 
     return False
-   
+
 
 #TODO
-        #Soma de verificação; Feito
-        #Temporizador;
-        #Número de sequência;
-        #Reconhecimento;
-        #Reconhecimento negativo;
-        #Janela, paralelismo.
+    #Soma de verificação; Feito
+    #Temporizador;
+    #Número de sequência; Feito
+    #Reconhecimento;
+    #Reconhecimento negativo;
+    #Ver se o ACK ta certo
+    #Janela, paralelismo.
