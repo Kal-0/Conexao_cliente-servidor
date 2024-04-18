@@ -70,98 +70,85 @@ sock.send(pickle.dumps(p_ack))
 if p_ack.header.flags == "ACK":
     print(f"Connection established with: '{d_ip}', {d_port}.\n")
 
-    while True:
-        # Menu do usuario
-        user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n[3]Simular perda de pacotes\
-                        \n[4]Simular erro de integridade(Checksum)\n")
+    # Menu do usuario
+    user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n[3]Simular perda de pacotes\
+                    \n[4]Simular erro de integridade(Checksum)\n")
 
 
+    # Mandando individualmente
+    if user_option == '1':
+        sequence = 0
+        ack_number = 0
 
 
-# Mandando individualmente
-if user_option == '1':
-    sequence = 0
-    ack_number = 1
+        while True:
+            # Send message
+            message = input("Send message: ")
+            
+            if message:
+                if message == "\\terminate":
+                    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "FIN", 1), "")
+                    sock.send(pickle.dumps(pack))
 
+                    break
 
-    while True:
+                # Envinhando caracteres separadamente
+                
 
-        timerThread = threading.Thread(target = timerCallback)
-        timerThread.start()
-
-        # Send message
-        message = input("Send message: ")
+                for char in message:
+                    while True:
+                        pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), char)
+                        sock.send(pickle.dumps(pack))
         
-        if message:
-            if message == "\\terminate":
-                sock.send(message.encode())
+                        # Receive ACK
+                        p_ack = pickle.loads(sock.recv(1024))
+                        if p_ack.header.flags == "ACK" and p_ack.header.ack_number == ack_number+1:
+                            break
 
-                break
+                    sequence += 1
+                    ack_number += 1
+                  
 
-            # Envinhando caracteres separadamente
-            caracteres = list(message)
 
-            for char in caracteres:
 
-                pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), char)
+    #Mandando em lote
+    elif user_option == '2':
+        sequence = 0
+        ack_number = 1
 
-                sock.send(pickle.dumps(pack))
- 
-                sequence += 1
-                ack_number += 1
+        while True:
+            # Send message
+            message = input("Send message: ")
+            
+            if message:
+                if message == "\\terminate":
+                    sock.send(message.encode())
+
+                    break
+                
+                last_ack = len(message)
+
+                hd_batch = header.COOLHeader(sequence, last_ack ,1)
+                package_batch = f'{hd_batch.sequence_number},{hd_batch.ack_number},{message}'
+                
+                sock.send(package_batch.encode())
 
                 # Receive ACK
                 ack = sock.recv(1024).decode()
 
                 # Confirm ACK
                 if ack == "ACK":
-                    print("Message received by server.")
-                else:
-                    print("Package lost.")
-            timerThread.cancel()
+                    print("Package batch received by server.")
+                # else:
+                #     print("Package batch lost.")
 
 
+    # Simulando erro 
+    elif user_option == '3':
+        print("a")
 
-#Mandando em lote
-elif user_option == '2':
-    sequence = 0
-    ack_number = 1
-
-    while True:
-        timerThread = threading.Thread(target = timerCallback)
-        timerThread.start()
-        # Send message
-        message = input("Send message: ")
-        
-        if message:
-            if message == "\\terminate":
-                sock.send(message.encode())
-
-                break
-            
-            last_ack = len(message)
-
-            hd_batch = header.COOLHeader(sequence, last_ack ,1)
-            package_batch = f'{hd_batch.sequence_number},{hd_batch.ack_number},{message}'
-            
-            sock.send(package_batch.encode())
-
-            # Receive ACK
-            ack = sock.recv(1024).decode()
-
-            # Confirm ACK
-            if ack == "ACK":
-                print("Package batch received by server.")
-            # else:
-            #     print("Package batch lost.")
-
-
-# Simulando erro 
-elif user_option == '3':
-   print("a")
-
-else:
-    print("Opcao invalida")
+    else:
+        print("Opcao invalida")
 
 
 # Close the socket
