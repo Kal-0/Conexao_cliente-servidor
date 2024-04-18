@@ -67,100 +67,113 @@ p_ack = packet.Packet(packet.COOLHeader(0, 0, "ACK", 0), "")
 sock.send(pickle.dumps(p_ack))
 
 
-if p_ack.header.flags == "ACK":
-    print(f"Connection established with: '{d_ip}', {d_port}.\n")
+# conexao estabelecida
+print(f"Connection established with: '{d_ip}', {d_port}.\n")
 
-    # Menu do usuario
-    user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n")
+#inicio do envio de pacotes
 
-
-    # Mandando individualmente
-    if user_option == '1':
-        sequence = 0
-        ack_number = 0
-
-        pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), "seq_send")
-        sock.send(pickle.dumps(pack))
-
-        while True:
-            # Send message
-            message = input("Send message: ")
-            
-            if message:
-                if message == "\\terminate":
-                    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "FIN", 10), "")
-                    sock.send(pickle.dumps(pack))
-                    break
-
-                # Envinhando pacotes por vez
-
-                while True:
-                    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), message)
-                    sock.send(pickle.dumps(pack))
-
-                    # Receive ACK
-                    p_ack = pickle.loads(sock.recv(1024))
-                    if p_ack.header.flags == "ACK" and p_ack.header.ack_number == ack_number+1:
-                        break
-
-                sequence += 1
-                ack_number += 1
+# Menu do usuario
+user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n")
 
 
+# Mandando individualmente
+if user_option == '1':
+    sqc_num = 0
+    ack_num = 0
 
+    # envia tipo de comunicacao para servidor
+    pack = packet.Packet(packet.COOLHeader(sqc_num, ack_num, "SEQ", 0), "")
+    sock.send(pickle.dumps(pack))
 
-    #Mandando em lote
-    elif user_option == '2':
-        sequence = 0
-        ack_number = 1
+    while True:
+        # Send message
+        message = input("Send message: ")
         
-        pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), "batch_send")
-        sock.send(pickle.dumps(pack))
+        if message:
+            # encerra conexao
+            if message == "\\terminate":
+                pack = packet.Packet(packet.COOLHeader(sqc_num, 0, "FIN", 0), "")
+                sock.send(pickle.dumps(pack))
+                break
 
-        while True:
-            # Send message
-            message = input("Send message: ")
-            
-            if message:
-                if message == "\\terminate":
-                    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "FIN", 10), "")
-                    sock.send(pickle.dumps(pack))
+            # envia pacotes
+            while True:
+                pack = packet.Packet(packet.COOLHeader(sqc_num, 0, "", 1), message)
+                sock.send(pickle.dumps(pack))
+
+                print(f"Ssqc_num: {pack.header.sequence_number}, Smsg: {pack.payload}")
+
+
+                # recebe ack para proximo pacote
+                p_ack = pickle.loads(sock.recv(1024))
+                print(f"sqc_num: {p_ack.header.sequence_number}, ack_num: {p_ack.header.ack_number}")
+                print("========================")
+                if p_ack.header.flags == "ACK" and p_ack.header.ack_number == sqc_num+1:
+                    print(f"ACK[{p_ack.header.ack_number}] >>>>")
+                    # sai do loop e cria proximo pacote
                     break
+                elif p_ack.header.flags == "NACK":
+                    print(f"NACK[{p_ack.header.ack_number}] XXX")
 
-                # Envinhando pacotes em rajada
-                while True:
-                    my_array = []
 
-                    qnt_package = input("Quantidade de pacotes no lote: ")
-                    
-                    for i in range(int(qnt_package)):
-                        my_array.append(f'{message}{i}')
+            sqc_num += 1
+            
 
-                    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), my_array)
-                    sock.send(pickle.dumps(pack))
 
-                    
 
-                    # Confirmar o recebimento do pacote
-                    p_ack = pickle.loads(sock.recv(1024))
-                    if p_ack.header.flags == "ACK":
-                        sequence += 1
-                        ack_number += 1
-                        break
 
-                    elif p_ack.header.flags == "NACK":
-                        sequence += 1
-                        ack_number += 1
-                        break
+#Mandando em lote
+elif user_option == '2':
+    sqc_num = 0
+    ack_num = 0
+    
+    pack = packet.Packet(packet.COOLHeader(sqc_num, ack_num, "", 10), "batch_send")
+    sock.send(pickle.dumps(pack))
 
+    while True:
+        # Send message
+        message = input("Send message: ")
+        
+        if message:
+            if message == "\\terminate":
+                pack = packet.Packet(packet.COOLHeader(sqc_num, ack_num, "FIN", 10), "")
+                sock.send(pickle.dumps(pack))
+                break
+
+            # Envinhando pacotes em rajada
+            while True:
+                my_array = []
+
+                qnt_package = input("Quantidade de pacotes no lote: ")
+                
+                for i in range(int(qnt_package)):
+                    my_array.append(f'{message}{sqc_num}')
+                    sqc_num+=1
+
+                pack = packet.Packet(packet.COOLHeader(sqc_num, ack_num, "", 10), my_array)
+                sock.send(pickle.dumps(pack))
 
                 
 
+                # Confirmar o recebimento do pacote
+                p_ack = pickle.loads(sock.recv(1024))
+                if p_ack.header.flags == "ACK":
+                    
+                    ack_num += 1
+                    break
+
+                elif p_ack.header.flags == "NACK":
+                    ack_num += 1
+                    break
+
+
+            
 
 
 
-    else:
-        print("Opcao invalida")
+
+else:
+    print("Opcao invalida")
 
 
 # Close the socket
