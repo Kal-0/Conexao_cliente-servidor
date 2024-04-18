@@ -73,4 +73,4 @@ while True:
             elif message == 2:
 
     # Close the connection
-    conn.close()
+conn.close()
