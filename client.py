@@ -43,9 +43,11 @@ sock.send(pickle.dumps(p_ack))
 
 if p_ack.header.flags == "ACK":
     print(f"Connection established with: '{d_ip}', {d_port}.\n")
-# Menu do usuario
-user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n[3]Simular perda de pacotes\
-                    \n[4]Simular erro de integridade(Checksum)\n")
+
+    while True:
+        # Menu do usuario
+        user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n[3]Simular perda de pacotes\
+                        \n[4]Simular erro de integridade(Checksum)\n")
 
 
 # Mandando individualmente

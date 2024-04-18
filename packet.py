@@ -28,6 +28,7 @@ class Packet:
     def __init__(self, header:COOLHeader, payload):
         self.header = header
         self.payload = payload
+        self.set_checksum()
 
     def get_checksum(self):
         packet_list = [self.header.sequence_number, self.header.ack_number, self.header.flags, self.header.window_size, self.header.header_length, self.payload]
@@ -44,9 +45,6 @@ class Packet:
             return True
 
         return False
-
-
-
 
 
 
