@@ -1,4 +1,6 @@
 import socket
+import pickle
+import packet
 
 # Create the socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,6 +20,10 @@ while True:
 
     # Accept connection
     conn, addr = sock.accept()
+
+    syn = pickle.loads(conn.recv(1024))
+    print(syn.header.sequence_number)
+    print(syn.payload)
 
     # Send ACK
     conn.send("ACK".encode())

@@ -1,6 +1,7 @@
 import socket
 import random
-
+import pickle
+import packet
 
 
 # Create the socket
@@ -21,6 +22,11 @@ d_port = 5000
 
 # Connect to the server
 sock.connect((d_ip, d_port))
+
+# send SYN
+p1 = packet.Packet(packet.COOLHeader(0, 0, "SYN", 100), "ola")
+sock.send(pickle.dumps(p1))
+print(len(pickle.dumps(p1)))
 
 # Receive ACK
 ack = sock.recv(1024).decode()

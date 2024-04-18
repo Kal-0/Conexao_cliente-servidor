@@ -1,16 +1,27 @@
 import pickle
-import header
-h1 = header.COOLHeader(2, 1, "ack", 10)
-
-test1 = b"c"
-exp1 = 198
-
+import packet
+h1 = packet.COOLHeader(2, 1, "ack", 10)
 payload = "Hello, World!"
-payload1 = "Hello, World!"
 
-h1.set_checksum(payload)
-print(h1.checksum)
+p1 = packet.Packet(h1, payload)
 
-payload = "Hello World!"
 
-print(header.vef_checksum(h1, payload1, h1.checksum))
+payload1 = "Hello World!"
+
+
+print(p1.header.checksum)
+print(p1.get_checksum())
+p1.set_checksum()
+print(p1.header.checksum)
+
+
+#simular corrupçãoVVV
+#p1.payload = payload1
+#print(p1.get_checksum())
+
+
+print(p1.vef_checksum())
+
+
+
+
