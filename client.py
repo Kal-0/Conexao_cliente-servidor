@@ -28,22 +28,21 @@ sock.connect((d_ip, d_port))
 
 
 # Send SYN
-p_syn = packet.Packet(packet.COOLHeader(0, 0, "SYN", 0), "SYN")
+p_syn = packet.Packet(packet.COOLHeader(0, 0, "SYN", 0), "")
 sock.send(pickle.dumps(p_syn))
-print(len(pickle.dumps(p_syn)))
 
 # Receive SYN-ACK
 p_synack = pickle.loads(sock.recv(1024))
-print(p_synack.header.flag)
+print(p_synack.header.flags)
 
 
 # Send ACK
-p_ack = packet.Packet(packet.COOLHeader(0, 0, "ACK", 0), "ACK")
+p_ack = packet.Packet(packet.COOLHeader(0, 0, "ACK", 0), "")
 sock.send(pickle.dumps(p_ack))
-print(len(pickle.dumps(p_ack)))
 
 
-
+if p_ack.header.flags == "ACK":
+    print(f"Connection established with: '{d_ip}', {d_port}.\n")
 # Menu do usuario
 user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n[3]Simular perda de pacotes\
                     \n[4]Simular erro de integridade(Checksum)\n")
