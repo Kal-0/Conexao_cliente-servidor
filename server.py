@@ -38,16 +38,32 @@ while True:
         print(f"Connection established with: {addr}.\n")
         
         
-
+        flag = False
         while True:
             num_sqc = 0
             num_ack = 0
             try:
                 # Receive message
+                
                 while True:
 
                     pack = pickle.loads(conn.recv(1024))
                     message = pack.payload
+                    
+                    
+                    if(message == "Tchecksum" and flag == False):
+                        flag = True
+                        pack.payload = "corrompido"
+
+                    if(pack.vef_checksum() == False):
+                        print("Erro no checksum")
+                        p_ack = packet.Packet(packet.COOLHeader(num_sqc, pack.header.sequence_number, "ACK", 0), "")
+                        conn.send(pickle.dumps(p_ack))
+                        break
+
+                    
+                   
+
 
                     print(message)
                     print("=====")
@@ -59,14 +75,17 @@ while True:
                             break
 
                     
-                    #para simular erro de ack errado apague +1
-                    p_ack = packet.Packet(packet.COOLHeader(num_sqc, pack.header.sequence_number+1, "ACK", 0), "")
-                    conn.send(pickle.dumps(p_ack))
+                        #para simular erro de ack errado apague +1
+                        p_ack = packet.Packet(packet.COOLHeader(num_sqc, pack.header.sequence_number+1, "ACK", 0), "")
+                        conn.send(pickle.dumps(p_ack))
+                    
 
             except:
                 print("something went wrong...\n")
                 break
-
+            if message == "\\terminate":
+                print("Connection terminated.\n")
+                break
             if message:
                 # Terminate connection
                 if message == "\\terminate":
@@ -80,4 +99,4 @@ while True:
             #print("///")
 
     # Close the connection
-    conn.close()
+conn.close()

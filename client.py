@@ -75,6 +75,11 @@ if p_ack.header.flags == "ACK":
                     \n[4]Simular erro de integridade(Checksum)\n")
 
 
+# Mandando individualmente
+if user_option == '1':
+
+    sequence = 0
+    ack_number = 1
     # Mandando individualmente
     if user_option == '1':
         sequence = 0
@@ -136,6 +141,12 @@ if p_ack.header.flags == "ACK":
                 # Receive ACK
                 ack = sock.recv(1024).decode()
 
+            # Confirm ACK
+            if ack == "ACK":
+                print("Message received by server.")
+            else:
+                print("Package lost.")
+                #TODO: reenvio de pacote
                 # Confirm ACK
                 if ack == "ACK":
                     print("Package batch received by server.")
