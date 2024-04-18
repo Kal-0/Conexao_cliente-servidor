@@ -95,18 +95,18 @@ if p_ack.header.flags == "ACK":
                 # Envinhando caracteres separadamente
                 
 
-                for char in message:
-                    while True:
-                        pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), char)
-                        sock.send(pickle.dumps(pack))
-        
-                        # Receive ACK
-                        p_ack = pickle.loads(sock.recv(1024))
-                        if p_ack.header.flags == "ACK" and p_ack.header.ack_number == ack_number+1:
-                            break
+                
+                while True:
+                    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), message)
+                    sock.send(pickle.dumps(pack))
+    
+                    # Receive ACK
+                    p_ack = pickle.loads(sock.recv(1024))
+                    if p_ack.header.flags == "ACK" and p_ack.header.ack_number == ack_number+1:
+                        break
 
-                    sequence += 1
-                    ack_number += 1
+                sequence += 1
+                ack_number += 1
                   
 
 

@@ -37,13 +37,32 @@ while True:
     if p_ack.header.flags == "ACK":
         print(f"Connection established with: {addr}.\n")
         
-        num_ack = 0
+        
 
         while True:
+            num_sqc = 0
+            num_ack = 0
             try:
                 # Receive message
-                message = conn.recv(1024).decode()
-                
+                while True:
+
+                    pack = pickle.loads(conn.recv(1024))
+                    message = pack.payload
+
+                    print(message)
+                    print("=====")
+
+                    if message:
+                    # Terminate connection
+                        if message == "\\terminate":
+                            print("Connection terminated.\n")
+                            break
+
+                    
+                    #para simular erro de ack errado apague +1
+                    p_ack = packet.Packet(packet.COOLHeader(num_sqc, pack.header.sequence_number+1, "ACK", 0), "")
+                    conn.send(pickle.dumps(p_ack))
+
             except:
                 print("something went wrong...\n")
                 break
@@ -53,21 +72,11 @@ while True:
                 if message == "\\terminate":
                     print("Connection terminated.\n")
                     break
+
+            num_sqc += 1
+            num_ack += 1
+
                 
-                msg = message.split(',')
-            
-
-                if num_ack != int(msg[0]) and num_ack == 0:
-                    conn.send("NACK".encode())
-                
-                else:
-                    num_ack = int(msg[1])
-
-                    # print("Message received.")
-                    print(f"Message: {msg}")
-
-                    # Send ACK
-                    conn.send("ACK".encode())
             #print("///")
 
     # Close the connection
