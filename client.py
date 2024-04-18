@@ -2,6 +2,32 @@ import socket
 import random
 import pickle
 import packet
+import time
+import threading
+
+def handle_timeout(sequence, ack_number, char):
+
+    sequence = 0
+    ack_number = 1
+
+    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), char)
+
+    sock.send(pickle.dumps(pack))
+
+
+def timerCallback():
+    timeout = 25
+    
+    startTime = time.time()
+
+    while True:
+        if time.time() - start_time > timeout:
+            handle_timeout(sequence, ack_number, char)
+            print("Timeout. Pacote reenviado.")
+
+            start_time = time.time()
+
+
 
 
 # Create the socket
@@ -28,25 +54,26 @@ sock.connect((d_ip, d_port))
 
 
 # Send SYN
-p_syn = packet.Packet(packet.COOLHeader(0, 0, "SYN", 0), "SYN")
+p_syn = packet.Packet(packet.COOLHeader(0, 0, "SYN", 0), "")
 sock.send(pickle.dumps(p_syn))
-print(len(pickle.dumps(p_syn)))
 
 # Receive SYN-ACK
 p_synack = pickle.loads(sock.recv(1024))
-print(p_synack.header.flag)
+print(p_synack.header.flags)
 
 
 # Send ACK
-p_ack = packet.Packet(packet.COOLHeader(0, 0, "ACK", 0), "ACK")
+p_ack = packet.Packet(packet.COOLHeader(0, 0, "ACK", 0), "")
 sock.send(pickle.dumps(p_ack))
-print(len(pickle.dumps(p_ack)))
 
 
-
+if p_ack.header.flags == "ACK":
+    print(f"Connection established with: '{d_ip}', {d_port}.\n")
 # Menu do usuario
 user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n[3]Simular perda de pacotes\
                     \n[4]Simular erro de integridade(Checksum)\n")
+
+
 
 
 # Mandando individualmente
@@ -56,6 +83,10 @@ if user_option == '1':
 
 
     while True:
+
+        timerThread = threading.Thread(target = timerCallback)
+        timerThread.start()
+
         # Send message
         message = input("Send message: ")
         
@@ -85,6 +116,7 @@ if user_option == '1':
                     print("Message received by server.")
                 else:
                     print("Package lost.")
+            timerThread.cancel()
 
 
 
@@ -94,6 +126,8 @@ elif user_option == '2':
     ack_number = 1
 
     while True:
+        timerThread = threading.Thread(target = timerCallback)
+        timerThread.start()
         # Send message
         message = input("Send message: ")
         
