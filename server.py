@@ -1,6 +1,7 @@
 import socket
-import header
+import packet
 import pickle
+
 
 # Create the socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,6 +31,7 @@ while True:
     # Confirm ACK
     if ack == "ACK":
         print(f"Connection established with: {addr}.\n")
+        
         num_ack = 0
 
         while True:
@@ -48,10 +50,7 @@ while True:
                     break
                 
                 msg = message.split(',')
-                
-                # print(f'sequencial: {msg[0]}')
-                # print(f'num ack: {msg[1]}')
-                # print(f'num arck servidor:{num_ack}')
+            
 
                 if num_ack != int(msg[0]) and num_ack == 0:
                     conn.send("NACK".encode())
