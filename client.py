@@ -74,100 +74,93 @@ if p_ack.header.flags == "ACK":
     user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n")
 
 
-# Mandando individualmente
-if user_option == '1':
-    sequence = 0
-    ack_number = 1
+    # Mandando individualmente
+    if user_option == '1':
+        sequence = 0
+        ack_number = 0
 
-    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), "seq_send")
-    sock.send(pickle.dumps(pack))
+        pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), "seq_send")
+        sock.send(pickle.dumps(pack))
 
-    while True:
-        # Send message
-        message = input("Send message: ")
+        while True:
+            # Send message
+            message = input("Send message: ")
+            
+            if message:
+                if message == "\\terminate":
+                    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "FIN", 10), "")
+                    sock.send(pickle.dumps(pack))
+                    break
+
+                # Envinhando pacotes por vez
+
+                while True:
+                    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), message)
+                    sock.send(pickle.dumps(pack))
+
+                    # Receive ACK
+                    p_ack = pickle.loads(sock.recv(1024))
+                    if p_ack.header.flags == "ACK" and p_ack.header.ack_number == ack_number+1:
+                        break
+
+                sequence += 1
+                ack_number += 1
+
+
+
+
+    #Mandando em lote
+    elif user_option == '2':
+        sequence = 0
+        ack_number = 1
         
-        if message:
-            if message == "\\terminate":
-                pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "FIN", 10), "")
-                sock.send(pickle.dumps(pack))
-                break
+        pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), "batch_send")
+        sock.send(pickle.dumps(pack))
 
-            # Envinhando pacotes por vez
+        while True:
+            # Send message
+            message = input("Send message: ")
+            
+            if message:
+                if message == "\\terminate":
+                    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "FIN", 10), "")
+                    sock.send(pickle.dumps(pack))
+                    break
 
-            while True:
-                pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), message)
-                sock.send(pickle.dumps(pack))
+                # Envinhando pacotes em rajada
+                while True:
+                    my_array = []
+
+                    qnt_package = input("Quantidade de pacotes no lote: ")
+                    
+                    for i in range(int(qnt_package)):
+                        my_array.append(f'{message}{i}')
+
+                    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), my_array)
+                    sock.send(pickle.dumps(pack))
+
+                    
+
+                    # Confirmar o recebimento do pacote
+                    p_ack = pickle.loads(sock.recv(1024))
+                    if p_ack.header.flags == "ACK":
+                        sequence += 1
+                        ack_number += 1
+                        break
+
+                    elif p_ack.header.flags == "NACK":
+                        sequence += 1
+                        ack_number += 1
+                        break
+
 
                 
 
-                # Confirmar o recebimento do pacote
-                p_ack = pickle.loads(sock.recv(1024))
-                if p_ack.header.flags == "ACK":
-                    sequence += 1
-                    ack_number += 1
-                    break
-
-                elif p_ack.header.flags == "NACK":
-                    sequence += 1
-                    ack_number += 1
-                    print(f"Pacote perdido")
-                    break
 
 
 
-
-#Mandando em lote
-elif user_option == '2':
-    sequence = 0
-    ack_number = 1
-    
-    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), "batch_send")
-    sock.send(pickle.dumps(pack))
-
-    while True:
-        # Send message
-        message = input("Send message: ")
-        
-        if message:
-            if message == "\\terminate":
-                pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "FIN", 10), "")
-                sock.send(pickle.dumps(pack))
-                break
-
-            # Envinhando pacotes em rajada
-            while True:
-                my_array = []
-
-                qnt_package = input("Quantidade de pacotes no lote: ")
-                
-                for i in range(int(qnt_package)):
-                    my_array.append(f'{message}{i}')
-
-                pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), my_array)
-                sock.send(pickle.dumps(pack))
-
-                
-
-                # Confirmar o recebimento do pacote
-                p_ack = pickle.loads(sock.recv(1024))
-                if p_ack.header.flags == "ACK":
-                    sequence += 1
-                    ack_number += 1
-                    break
-
-                elif p_ack.header.flags == "NACK":
-                    sequence += 1
-                    ack_number += 1
-                    break
-
-
-               
-
-
-
-
-else:
-    print("Opcao invalida")
+    else:
+        print("Opcao invalida")
 
 
 # Close the socket

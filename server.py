@@ -44,8 +44,9 @@ while True:
         batch_flag = False
         print_flag = False
 
+        num_sqc = 0
+        
         while True:
-            num_sqc = 0
        
             try:
                 while True:
