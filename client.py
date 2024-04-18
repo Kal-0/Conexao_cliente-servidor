@@ -26,22 +26,23 @@ d_port = 5000
 # Connect to the server
 sock.connect((d_ip, d_port))
 
-# send SYN
-p1 = packet.Packet(packet.COOLHeader(0, 0, "SYN", 100), "ola")
-sock.send(pickle.dumps(p1))
-print(len(pickle.dumps(p1)))
 
-# Receive ACK
-ack = sock.recv(1024).decode()
+# Send SYN
+p_syn = packet.Packet(packet.COOLHeader(0, 0, "SYN", 0), "SYN")
+sock.send(pickle.dumps(p_syn))
+print(len(pickle.dumps(p_syn)))
 
-
-# Confirm ACK
-if ack == "ACK":
-    print(f"Connection established with: ({d_ip}, {d_port}).\n")
+# Receive SYN-ACK
+p_synack = pickle.loads(sock.recv(1024))
+print(p_synack.header.flag)
 
 
 # Send ACK
-sock.send("ACK".encode())
+p_ack = packet.Packet(packet.COOLHeader(0, 0, "ACK", 0), "ACK")
+sock.send(pickle.dumps(p_ack))
+print(len(pickle.dumps(p_ack)))
+
+
 
 # Menu do usuario
 user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n[3]Simular perda de pacotes\
@@ -68,12 +69,11 @@ if user_option == '1':
             caracteres = list(message)
 
             for char in caracteres:
-                hd = header.COOLHeader(sequence, ack_number ,1)
-                
-                package = f'{hd.sequence_number},{hd.ack_number},{char}'
-                
-                sock.send(package.encode())
 
+                pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), char)
+
+                sock.send(pickle.dumps(pack))
+ 
                 sequence += 1
                 ack_number += 1
 
