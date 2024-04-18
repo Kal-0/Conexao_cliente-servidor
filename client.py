@@ -2,6 +2,32 @@ import socket
 import random
 import pickle
 import packet
+import time
+import threading
+
+def handle_timeout(sequence, ack_number, char):
+
+    sequence = 0
+    ack_number = 1
+
+    pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), char)
+
+    sock.send(pickle.dumps(pack))
+
+
+def timerCallback():
+    timeout = 25
+    
+    startTime = time.time()
+
+    while True:
+        if time.time() - start_time > timeout:
+            handle_timeout(sequence, ack_number, char)
+            print("Timeout. Pacote reenviado.")
+
+            start_time = time.time()
+
+
 
 
 # Create the socket
@@ -50,6 +76,8 @@ if p_ack.header.flags == "ACK":
                         \n[4]Simular erro de integridade(Checksum)\n")
 
 
+
+
 # Mandando individualmente
 if user_option == '1':
     sequence = 0
@@ -57,6 +85,10 @@ if user_option == '1':
 
 
     while True:
+
+        timerThread = threading.Thread(target = timerCallback)
+        timerThread.start()
+
         # Send message
         message = input("Send message: ")
         
@@ -86,6 +118,7 @@ if user_option == '1':
                     print("Message received by server.")
                 else:
                     print("Package lost.")
+            timerThread.cancel()
 
 
 
@@ -95,6 +128,8 @@ elif user_option == '2':
     ack_number = 1
 
     while True:
+        timerThread = threading.Thread(target = timerCallback)
+        timerThread.start()
         # Send message
         message = input("Send message: ")
         
