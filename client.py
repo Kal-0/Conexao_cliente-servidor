@@ -7,18 +7,21 @@ import packet
 # Create the socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+
 # Set origin
 LOCALHOST = "127.0.0.1"
 ip = "127.0.0.2"
+
+
 # Set a random port
 port = random.randint(5000, 6000)
-#port = 12345
-
 sock.bind((ip, port))
+
 
 # Set destiny
 d_ip = "127.0.0.1"
 d_port = 5000
+
 
 # Connect to the server
 sock.connect((d_ip, d_port))
@@ -31,32 +34,98 @@ print(len(pickle.dumps(p1)))
 # Receive ACK
 ack = sock.recv(1024).decode()
 
+
 # Confirm ACK
 if ack == "ACK":
     print(f"Connection established with: ({d_ip}, {d_port}).\n")
 
+
 # Send ACK
 sock.send("ACK".encode())
 
-while True:
-    # Send message
-    message = input("Send message: ")
-    
-    if message:
-        if message == "\\terminate":
-            sock.send(message.encode())
+# Menu do usuario
+user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\n[2]-Envio em lote de pacotes\n[3]Simular perda de pacotes\
+                    \n[4]Simular erro de integridade(Checksum)\n")
 
-            break
 
-        sock.send(message.encode())
+# Mandando individualmente
+if user_option == '1':
+    sequence = 0
+    ack_number = 1
 
-        # Receive ACK
-        ack = sock.recv(1024).decode()
 
-        # Confirm ACK
-        if ack == "ACK":
-            print("Message received by server.")
+    while True:
+        # Send message
+        message = input("Send message: ")
+        
+        if message:
+            if message == "\\terminate":
+                sock.send(message.encode())
 
+                break
+
+            # Envinhando caracteres separadamente
+            caracteres = list(message)
+
+            for char in caracteres:
+                hd = header.COOLHeader(sequence, ack_number ,1)
+                
+                package = f'{hd.sequence_number},{hd.ack_number},{char}'
+                
+                sock.send(package.encode())
+
+                sequence += 1
+                ack_number += 1
+
+                # Receive ACK
+                ack = sock.recv(1024).decode()
+
+                # Confirm ACK
+                if ack == "ACK":
+                    print("Message received by server.")
+                else:
+                    print("Package lost.")
+
+
+
+#Mandando em lote
+elif user_option == '2':
+    sequence = 0
+    ack_number = 1
+
+    while True:
+        # Send message
+        message = input("Send message: ")
+        
+        if message:
+            if message == "\\terminate":
+                sock.send(message.encode())
+
+                break
+            
+            last_ack = len(message)
+
+            hd_batch = header.COOLHeader(sequence, last_ack ,1)
+            package_batch = f'{hd_batch.sequence_number},{hd_batch.ack_number},{message}'
+            
+            sock.send(package_batch.encode())
+
+            # Receive ACK
+            ack = sock.recv(1024).decode()
+
+            # Confirm ACK
+            if ack == "ACK":
+                print("Package batch received by server.")
+            # else:
+            #     print("Package batch lost.")
+
+
+# Simulando erro 
+elif user_option == '3':
+   print("a")
+
+else:
+    print("Opcao invalida")
 
 
 # Close the socket
