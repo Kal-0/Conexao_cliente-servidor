@@ -37,6 +37,7 @@ while True:
     if p_ack.header.flags == "ACK":
         print(f"Connection established with: {addr}.\n")
         
+
         num_ack = 0
 
         while True:
@@ -47,12 +48,12 @@ while True:
             except:
                 print("something went wrong...\n")
                 break
-
+            if message == "\\terminate":
+                print("Connection terminated.\n")
+                break
             if message:
                 # Terminate connection
-                if message == "\\terminate":
-                    print("Connection terminated.\n")
-                    break
+
                 
                 msg = message.split(',')
             
@@ -68,7 +69,8 @@ while True:
 
                     # Send ACK
                     conn.send("ACK".encode())
-            #print("///")
+
+            elif message == 2:
 
     # Close the connection
     conn.close()

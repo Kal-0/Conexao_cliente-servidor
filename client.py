@@ -50,6 +50,9 @@ user_option = input("Operacao a ser realizada:\n[1]-Envio individual de pacotes\
 
 # Mandando individualmente
 if user_option == '1':
+
+    sock.sendall(user_option.encode())
+
     sequence = 0
     ack_number = 1
 
@@ -63,27 +66,25 @@ if user_option == '1':
                 sock.send(message.encode())
 
                 break
+   
+            pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 10), message)
 
-            # Envinhando caracteres separadamente
-            caracteres = list(message)
+            sock.send(pickle.dumps(pack))
 
-            for char in caracteres:
+            sequence += 1
+            ack_number += 1
 
-                pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), char)
 
-                sock.send(pickle.dumps(pack))
- 
-                sequence += 1
-                ack_number += 1
+            p_ack = pickle.loads(sock.recv(1024))
+            print(p_ack.header.flags)
 
-                # Receive ACK
-                ack = sock.recv(1024).decode()
 
-                # Confirm ACK
-                if ack == "ACK":
-                    print("Message received by server.")
-                else:
-                    print("Package lost.")
+            # Confirm ACK
+            if p_ack.header.flags == "ACK":
+                print("Message received by server.")
+            else:
+                print("Package  lost.")
+                #TODO: reenvio de pacote
 
 
 
@@ -101,22 +102,29 @@ elif user_option == '2':
                 sock.send(message.encode())
 
                 break
-            
-            last_ack = len(message)
 
-            hd_batch = header.COOLHeader(sequence, last_ack ,1)
-            package_batch = f'{hd_batch.sequence_number},{hd_batch.ack_number},{message}'
-            
-            sock.send(package_batch.encode())
+            # Envinhando caracteres simultaneamente
+            qnt_package = input("Numero de pacotes no lote: ")
+
+            for i in range(qnt_package):
+
+                pack = packet.Packet(packet.COOLHeader(sequence, ack_number, "", 1), message)
+
+                sequence += 1
+                ack_number += 1
+                    
+                sock.send(pickle.dumps(pack))
+                
 
             # Receive ACK
             ack = sock.recv(1024).decode()
 
             # Confirm ACK
             if ack == "ACK":
-                print("Package batch received by server.")
-            # else:
-            #     print("Package batch lost.")
+                print("Message received by server.")
+            else:
+                print("Package lost.")
+                #TODO: reenvio de pacote
 
 
 # Simulando erro 
