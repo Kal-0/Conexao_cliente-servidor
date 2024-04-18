@@ -23,16 +23,14 @@ while True:
 
     # Receive SYN
     p_syn = pickle.loads(conn.recv(1024))
-    print(p_syn.header.sequence_number)
     print(p_syn.header.flags)
 
     # Send SYN-ACK
-    p_synack = packet.Packet(packet.COOLHeader(0, 0, "SYN-ACK", 0), "SYN-ACK")
-    sock.send(pickle.dumps(p_synack))
+    p_synack = packet.Packet(packet.COOLHeader(0, 0, "SYN-ACK", 0), "")
+    conn.send(pickle.dumps(p_synack))
 
     #Recieve ACK
     p_ack = pickle.loads(conn.recv(1024))
-    print(p_ack.header.sequence_number)
     print(p_ack.header.flags)
     
     # Confirm ACK

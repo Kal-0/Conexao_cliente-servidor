@@ -53,6 +53,7 @@ class Packet:
 
 
 
+
 #TODO
         #Soma de verificação; Feito
         #Temporizador;
