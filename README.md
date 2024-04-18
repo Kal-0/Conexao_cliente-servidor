@@ -20,7 +20,25 @@ Desenvolver uma aplicação cliente-servidor capaz de, na camada de aplicação,
 
 Utilizamos a versão 3.12.0 do Python para o desenvolvimento
 
-- [ ] TODO - Instruções para execução do projeto
+## Manual de Utilização
+### 1° clone o repositório ou copie os arquivos ".py"
+### 2° execute o server.py
+execute esse comando no terminal no diretório dos arquivos
+```
+py server.py
+```
+### 3° execute o client.py
+execute esse comando no terminal no diretório dos arquivos
+```
+py client.py
+```
+### 4° selecione um metodo de envio no terminal do client
+### 5° envie mensagens ao servidor
+### 6° para simular um pacote corrompido escreva a mensagem:
+```
+Tchecksum
+```
+
 
 ## 📚📖🔍 Referências
 
